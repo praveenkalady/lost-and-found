@@ -6,7 +6,7 @@ function Home() {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="text-center mb-12">
-        <h1 className="text-5xl font-bold mb-4 text-black">Lost & Found</h1>
+        <h1 className="text-5xl font-bold mb-4 text-black">UFoundIt</h1>
         <p className="text-xl text-gray-600 mb-8">
           Reuniting people with their lost belongings
         </p>

@@ -25,7 +25,7 @@ function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="text-white text-xl font-bold">
-            Lost & Found
+            UFoundIt
           </Link>
 
           <div className="flex items-center gap-6">
