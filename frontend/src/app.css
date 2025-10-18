@@ -1,0 +1,16 @@
+@import "tailwindcss";
+@import "flowbite";
+
+@theme {
+  /* Add Flowbite content paths */
+  --content: "./index.html", "./src/**/*.{js,ts,jsx,tsx}";
+}
+
+/* Custom styles for better label visibility */
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #111827;
+}
