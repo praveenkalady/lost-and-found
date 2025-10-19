@@ -1,6 +1,6 @@
-# Lost & Found Application
+# UFoundIt Website
 
-A full-stack Lost & Found application with React frontend and Node.js/Express backend, containerized with Docker.
+A full-stack UFoundIt Website with React frontend and Node.js/Express backend, containerized with Docker.
 
 ## Tech Stack
 
