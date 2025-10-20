@@ -52,12 +52,76 @@ app.use('/api/custodians', custodianRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Socket.io for real-time chat (will implement later)
+// Socket.io for real-time chat
+const userSockets = new Map(); // userId -> socketId mapping
+
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
   
+  // User authentication and registration
+  socket.on('register', (userId) => {
+    userSockets.set(userId.toString(), socket.id);
+    console.log(`User ${userId} registered with socket ${socket.id}`);
+  });
+
+  // Join a conversation room
+  socket.on('join_conversation', ({ userId, itemId }) => {
+    const room = `conversation_${Math.min(userId, socket.userId)}_${Math.max(userId, socket.userId)}_${itemId}`;
+    socket.join(room);
+    console.log(`User joined room: ${room}`);
+  });
+
+  // Send message
+  socket.on('send_message', async (data) => {
+    const { receiver_id, item_id, message_text, sender_id, sender_name } = data;
+    
+    // Emit to receiver if they're online
+    const receiverSocketId = userSockets.get(receiver_id.toString());
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit('new_message', {
+        sender_id,
+        sender_name,
+        receiver_id,
+        item_id,
+        message_text,
+        created_at: new Date().toISOString()
+      });
+    }
+    
+    // Also emit back to sender for confirmation
+    socket.emit('message_sent', {
+      sender_id,
+      receiver_id,
+      item_id,
+      message_text,
+      created_at: new Date().toISOString()
+    });
+  });
+
+  // Typing indicator
+  socket.on('typing', ({ receiver_id, item_id }) => {
+    const receiverSocketId = userSockets.get(receiver_id.toString());
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit('user_typing', { item_id });
+    }
+  });
+
+  socket.on('stop_typing', ({ receiver_id, item_id }) => {
+    const receiverSocketId = userSockets.get(receiver_id.toString());
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit('user_stop_typing', { item_id });
+    }
+  });
+  
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+    // Remove user from mapping
+    for (const [userId, socketId] of userSockets.entries()) {
+      if (socketId === socket.id) {
+        userSockets.delete(userId);
+        console.log(`User ${userId} disconnected`);
+        break;
+      }
+    }
   });
 });
 

@@ -11,6 +11,7 @@ import Search from './pages/Search';
 import Profile from './pages/Profile';
 import Messages from './pages/Messages';
 import Custodians from './pages/Custodians';
+import Admin from './pages/Admin';
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('token');
@@ -34,6 +35,7 @@ function App() {
             <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
             <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
             <Route path="/custodians" element={<Custodians />} />
+            <Route path="/admin" element={<PrivateRoute><Admin /></PrivateRoute>} />
           </Routes>
         </main>
       </div>

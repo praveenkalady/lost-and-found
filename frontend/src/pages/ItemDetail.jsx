@@ -135,7 +135,16 @@ function ItemDetail() {
                 </Button>
               </>
             ) : currentUser ? (
-              <Link to="/messages" className="flex-1">
+              <Link 
+                to="/messages" 
+                state={{ 
+                  itemId: item.id, 
+                  ownerId: item.user_id,
+                  ownerName: item.owner_name,
+                  itemTitle: item.title
+                }} 
+                className="flex-1"
+              >
                 <Button color="dark" className="w-full">
                   Contact Owner
                 </Button>
