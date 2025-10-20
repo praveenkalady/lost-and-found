@@ -4,6 +4,24 @@ import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Public endpoint to get admin user info (for contacting admin)
+router.get('/admin-user', async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT id, full_name, email FROM profiles WHERE role = 'admin' LIMIT 1"
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Admin user not found' });
+    }
+
+    res.json({ admin: result.rows[0] });
+  } catch (error) {
+    console.error('Get admin user error:', error);
+    res.status(500).json({ error: 'Failed to fetch admin user' });
+  }
+});
+
 // All admin routes require authentication and admin role
 router.use(authenticate);
 router.use(authorize('admin'));

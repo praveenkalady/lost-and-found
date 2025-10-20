@@ -70,8 +70,8 @@ function Messages() {
       const response = await api.get('/messages/conversations');
       let convList = response.data.conversations;
       
-      // Auto-select conversation if navigated from item detail
-      if (location.state?.itemId && location.state?.ownerId) {
+      // Auto-select conversation if navigated from link
+      if (location.state?.ownerId !== undefined) {
         const targetConv = convList.find(
           conv => conv.item_id === location.state.itemId && 
                   conv.other_user_id === location.state.ownerId
@@ -108,7 +108,8 @@ function Messages() {
 
   const fetchMessages = async (userId, itemId) => {
     try {
-      const response = await api.get(`/messages/conversation/${userId}/${itemId}`);
+      const itemIdParam = itemId === null ? 'null' : itemId;
+      const response = await api.get(`/messages/conversation/${userId}/${itemIdParam}`);
       setMessages(response.data.messages);
     } catch (error) {
       console.error('Failed to fetch messages:', error);

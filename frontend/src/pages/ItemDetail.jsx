@@ -13,10 +13,12 @@ function ItemDetail() {
   const [error, setError] = useState('');
   const [showDropoffModal, setShowDropoffModal] = useState(false);
   const [showPickupModal, setShowPickupModal] = useState(false);
+  const [adminUser, setAdminUser] = useState(null);
   const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
 
   useEffect(() => {
     fetchItem();
+    fetchAdminUser();
   }, [id]);
 
   const fetchItem = async () => {
@@ -28,6 +30,15 @@ function ItemDetail() {
       console.error('Failed to fetch item:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAdminUser = async () => {
+    try {
+      const response = await api.get('/admin/admin-user');
+      setAdminUser(response.data.admin);
+    } catch (error) {
+      console.error('Failed to fetch admin user:', error);
     }
   };
 
@@ -133,18 +144,37 @@ function ItemDetail() {
 
           <div className="flex flex-col gap-3 pt-4">
             {isOwner ? (
-              <div className="flex gap-3">
-                <Button 
-                  color="success" 
-                  onClick={() => setShowPickupModal(true)}
-                  className="flex-1"
-                >
-                  📦 Request Pickup
-                </Button>
-                <Button color="failure" onClick={handleDelete} className="flex-1">
-                  Delete Item
-                </Button>
-              </div>
+              <>
+                <div className="flex gap-3">
+                  {item.status === 'found' && (
+                    <Button 
+                      color="success" 
+                      onClick={() => setShowPickupModal(true)}
+                      className="flex-1"
+                    >
+                      📦 Request Pickup
+                    </Button>
+                  )}
+                  <Button color="failure" onClick={handleDelete} className="flex-1">
+                    Delete Item
+                  </Button>
+                </div>
+                {adminUser && (
+                  <Link 
+                    to="/messages" 
+                    state={{ 
+                      itemId: item.id, 
+                      ownerId: adminUser.id,
+                      ownerName: 'Admin',
+                      itemTitle: item.title
+                    }}
+                  >
+                    <Button color="info" className="w-full">
+                      👤 Contact Admin (Request Status Update)
+                    </Button>
+                  </Link>
+                )}
+              </>
             ) : currentUser ? (
               <div className="flex gap-3">
                 <Link 
@@ -161,13 +191,15 @@ function ItemDetail() {
                     💬 Contact Owner
                   </Button>
                 </Link>
-                <Button 
-                  color="info" 
-                  onClick={() => setShowDropoffModal(true)}
-                  className="flex-1"
-                >
-                  📤 Drop Off
-                </Button>
+                {item.status === 'found' && (
+                  <Button 
+                    color="info" 
+                    onClick={() => setShowDropoffModal(true)}
+                    className="flex-1"
+                  >
+                    📤 Drop Off
+                  </Button>
+                )}
               </div>
             ) : (
               <Link to="/login" className="w-full">

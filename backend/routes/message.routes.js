@@ -8,7 +8,7 @@ const router = express.Router();
 // Send message
 router.post('/', authenticate, [
   body('receiver_id').isInt(),
-  body('item_id').isInt(),
+  body('item_id').optional({ nullable: true }).isInt(),
   body('message_text').trim().notEmpty()
 ], async (req, res) => {
   try {
@@ -23,14 +23,14 @@ router.post('/', authenticate, [
       `INSERT INTO messages (sender_id, receiver_id, item_id, message_text, status)
        VALUES ($1, $2, $3, $4, 'sent')
        RETURNING *`,
-      [req.user.id, receiver_id, item_id, message_text]
+      [req.user.id, receiver_id, item_id || null, message_text]
     );
 
     // Create notification for receiver
     await pool.query(
       `INSERT INTO notifications (user_id, title, message, type, related_item_id)
        VALUES ($1, $2, $3, $4, $5)`,
-      [receiver_id, 'New Message', `You have a new message from ${req.user.full_name}`, 'message', item_id]
+      [receiver_id, 'New Message', `You have a new message from ${req.user.full_name}`, 'message', item_id || null]
     );
 
     res.status(201).json({ message: 'Message sent', data: result.rows[0] });
@@ -44,20 +44,35 @@ router.post('/', authenticate, [
 router.get('/conversation/:userId/:itemId', authenticate, async (req, res) => {
   try {
     const { userId, itemId } = req.params;
+    const itemIdValue = itemId === 'null' ? null : parseInt(itemId);
 
-    const result = await pool.query(
-      `SELECT m.*, 
-              s.full_name as sender_name,
-              r.full_name as receiver_name
-       FROM messages m
-       JOIN profiles s ON m.sender_id = s.id
-       JOIN profiles r ON m.receiver_id = r.id
-       WHERE m.item_id = $1 
-       AND ((m.sender_id = $2 AND m.receiver_id = $3) 
-            OR (m.sender_id = $3 AND m.receiver_id = $2))
-       ORDER BY m.created_at ASC`,
-      [itemId, req.user.id, userId]
-    );
+    const query = itemIdValue === null
+      ? `SELECT m.*, 
+                s.full_name as sender_name,
+                r.full_name as receiver_name
+         FROM messages m
+         JOIN profiles s ON m.sender_id = s.id
+         JOIN profiles r ON m.receiver_id = r.id
+         WHERE m.item_id IS NULL
+         AND ((m.sender_id = $1 AND m.receiver_id = $2) 
+              OR (m.sender_id = $2 AND m.receiver_id = $1))
+         ORDER BY m.created_at ASC`
+      : `SELECT m.*, 
+                s.full_name as sender_name,
+                r.full_name as receiver_name
+         FROM messages m
+         JOIN profiles s ON m.sender_id = s.id
+         JOIN profiles r ON m.receiver_id = r.id
+         WHERE m.item_id = $1 
+         AND ((m.sender_id = $2 AND m.receiver_id = $3) 
+              OR (m.sender_id = $3 AND m.receiver_id = $2))
+         ORDER BY m.created_at ASC`;
+
+    const params = itemIdValue === null
+      ? [req.user.id, userId]
+      : [itemIdValue, req.user.id, userId];
+
+    const result = await pool.query(query, params);
 
     res.json({ messages: result.rows });
   } catch (error) {
@@ -84,11 +99,11 @@ router.get('/conversations', authenticate, async (req, res) => {
                WHEN m.sender_id = $1 THEN m.receiver_id 
                ELSE m.sender_id 
              END as other_user_id,
-             i.title as item_title
+             COALESCE(i.title, 'General Inquiry') as item_title
        FROM messages m
        JOIN profiles s ON m.sender_id = s.id
        JOIN profiles r ON m.receiver_id = r.id
-       JOIN items i ON m.item_id = i.id
+       LEFT JOIN items i ON m.item_id = i.id
        WHERE m.sender_id = $1 OR m.receiver_id = $1
        ORDER BY m.item_id,
                 CASE 

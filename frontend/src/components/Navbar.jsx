@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from 'flowbite-react';
 import NotificationDropdown from './NotificationDropdown';
+import api from '../utils/api';
 
 function Navbar({ notifications = [], onClearAllNotifications }) {
   const [user, setUser] = useState(null);
+  const [adminUser, setAdminUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -12,7 +14,17 @@ function Navbar({ notifications = [], onClearAllNotifications }) {
     if (userData) {
       setUser(JSON.parse(userData));
     }
+    fetchAdminUser();
   }, []);
+
+  const fetchAdminUser = async () => {
+    try {
+      const response = await api.get('/admin/admin-user');
+      setAdminUser(response.data.admin);
+    } catch (error) {
+      console.error('Failed to fetch admin user:', error);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -54,6 +66,20 @@ function Navbar({ notifications = [], onClearAllNotifications }) {
                 <Link to="/messages" className="text-white hover:text-gray-300">
                   Messages
                 </Link>
+                {adminUser && user.role !== 'admin' && (
+                  <Link 
+                    to="/messages" 
+                    state={{ 
+                      itemId: null,
+                      ownerId: adminUser.id,
+                      ownerName: 'Admin Support',
+                      itemTitle: 'General Inquiry'
+                    }}
+                    className="text-yellow-400 hover:text-yellow-300 font-medium"
+                  >
+                    💬 Contact Admin
+                  </Link>
+                )}
                 <Link to="/my-requests" className="text-white hover:text-gray-300">
                   My Requests
                 </Link>
