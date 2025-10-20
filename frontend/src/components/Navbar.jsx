@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from 'flowbite-react';
+import NotificationDropdown from './NotificationDropdown';
 
-function Navbar() {
+function Navbar({ notifications = [], onClearAllNotifications }) {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
@@ -46,8 +47,15 @@ function Navbar() {
                     Report Item
                   </Button>
                 </Link>
+                <NotificationDropdown 
+                  notifications={notifications} 
+                  onClearAll={onClearAllNotifications}
+                />
                 <Link to="/messages" className="text-white hover:text-gray-300">
                   Messages
+                </Link>
+                <Link to="/my-requests" className="text-white hover:text-gray-300">
+                  My Requests
                 </Link>
                 <Link to="/profile" className="text-white hover:text-gray-300">
                   Profile

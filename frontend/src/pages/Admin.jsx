@@ -8,6 +8,8 @@ function Admin() {
   const [items, setItems] = useState([]);
   const [custodians, setCustodians] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [pickupRequests, setPickupRequests] = useState([]);
+  const [dropoffRequests, setDropoffRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -24,12 +26,14 @@ function Admin() {
 
   const fetchAdminData = async () => {
     try {
-      const [statsRes, usersRes, itemsRes, custodiansRes, notificationsRes] = await Promise.all([
+      const [statsRes, usersRes, itemsRes, custodiansRes, notificationsRes, pickupRes, dropoffRes] = await Promise.all([
         api.get('/admin/stats'),
         api.get('/admin/users'),
         api.get('/admin/items'),
         api.get('/custodians'),
-        api.get('/messages/notifications')
+        api.get('/messages/notifications'),
+        api.get('/custodians/admin/pickup'),
+        api.get('/custodians/admin/dropoff')
       ]);
 
       setStats(statsRes.data.stats);
@@ -37,6 +41,8 @@ function Admin() {
       setItems(itemsRes.data.items);
       setCustodians(custodiansRes.data.custodians);
       setNotifications(notificationsRes.data.notifications || []);
+      setPickupRequests(pickupRes.data.requests);
+      setDropoffRequests(dropoffRes.data.requests);
     } catch (error) {
       console.error('Failed to fetch admin data:', error);
     } finally {
@@ -104,6 +110,26 @@ function Admin() {
       setNotifications(notifications.filter(n => n.id !== notificationId));
     } catch (error) {
       console.error('Failed to mark notification as read');
+    }
+  };
+
+  const updatePickupRequest = async (requestId, status) => {
+    try {
+      await api.put(`/custodians/admin/pickup/${requestId}`, { status });
+      setPickupRequests(pickupRequests.map(r => r.id === requestId ? { ...r, status } : r));
+      alert(`Pickup request ${status}`);
+    } catch (error) {
+      alert('Failed to update pickup request');
+    }
+  };
+
+  const updateDropoffRequest = async (requestId, status) => {
+    try {
+      await api.put(`/custodians/admin/dropoff/${requestId}`, { status });
+      setDropoffRequests(dropoffRequests.map(r => r.id === requestId ? { ...r, status } : r));
+      alert(`Drop-off request ${status}`);
+    } catch (error) {
+      alert('Failed to update drop-off request');
     }
   };
 
@@ -214,6 +240,16 @@ function Admin() {
               }`}
             >
               Custodians
+            </button>
+            <button
+              onClick={() => setActiveTab('requests')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'requests'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Requests ({pickupRequests.length + dropoffRequests.length})
             </button>
           </nav>
         </div>
@@ -335,6 +371,120 @@ function Admin() {
               </table>
             </div>
           </Card>
+        )}
+
+        {/* Requests Tab */}
+        {activeTab === 'requests' && (
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Custodian Requests</h2>
+            
+            {/* Pickup Requests */}
+            <h3 className="text-lg font-semibold mb-3 mt-6">Pickup Requests ({pickupRequests.length})</h3>
+            {pickupRequests.length === 0 ? (
+              <Card>
+                <p className="text-center text-gray-600 py-4">No pickup requests</p>
+              </Card>
+            ) : (
+              <div className="space-y-3 mb-8">
+                {pickupRequests.map((request) => (
+                  <Card key={request.id}>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h4 className="font-bold text-lg">{request.item_title}</h4>
+                          <Badge color={
+                            request.status === 'pending' ? 'warning' :
+                            request.status === 'approved' ? 'info' :
+                            request.status === 'completed' ? 'success' : 'failure'
+                          }>
+                            {request.status.toUpperCase()}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-gray-600 space-y-1">
+                          <p><strong>Owner:</strong> {request.owner_name} ({request.owner_email})</p>
+                          <p><strong>Category:</strong> {request.category}</p>
+                          <p><strong>Custodian:</strong> {request.custodian_name} - {request.location}</p>
+                          <p><strong>Verification Code:</strong> <span className="font-mono text-blue-600 font-bold">{request.verification_code}</span></p>
+                          {request.notes && <p><strong>Notes:</strong> {request.notes}</p>}
+                          <p className="text-xs text-gray-500">Requested: {new Date(request.created_at).toLocaleString()}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        {request.status === 'pending' && (
+                          <>
+                            <Button size="xs" color="success" onClick={() => updatePickupRequest(request.id, 'approved')}>
+                              Approve
+                            </Button>
+                            <Button size="xs" color="failure" onClick={() => updatePickupRequest(request.id, 'rejected')}>
+                              Reject
+                            </Button>
+                          </>
+                        )}
+                        {request.status === 'approved' && (
+                          <Button size="xs" color="dark" onClick={() => updatePickupRequest(request.id, 'completed')}>
+                            Mark Completed
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {/* Drop-off Requests */}
+            <h3 className="text-lg font-semibold mb-3 mt-6">Drop-off Requests ({dropoffRequests.length})</h3>
+            {dropoffRequests.length === 0 ? (
+              <Card>
+                <p className="text-center text-gray-600 py-4">No drop-off requests</p>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {dropoffRequests.map((request) => (
+                  <Card key={request.id}>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h4 className="font-bold text-lg">{request.item_title}</h4>
+                          <Badge color={
+                            request.status === 'pending' ? 'warning' :
+                            request.status === 'approved' ? 'info' :
+                            request.status === 'completed' ? 'success' : 'failure'
+                          }>
+                            {request.status.toUpperCase()}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-gray-600 space-y-1">
+                          <p><strong>Finder:</strong> {request.finder_name} ({request.finder_email})</p>
+                          <p><strong>Category:</strong> {request.category}</p>
+                          <p><strong>Custodian:</strong> {request.custodian_name} - {request.location}</p>
+                          {request.notes && <p><strong>Notes:</strong> {request.notes}</p>}
+                          <p className="text-xs text-gray-500">Requested: {new Date(request.created_at).toLocaleString()}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        {request.status === 'pending' && (
+                          <>
+                            <Button size="xs" color="success" onClick={() => updateDropoffRequest(request.id, 'approved')}>
+                              Approve
+                            </Button>
+                            <Button size="xs" color="failure" onClick={() => updateDropoffRequest(request.id, 'rejected')}>
+                              Reject
+                            </Button>
+                          </>
+                        )}
+                        {request.status === 'approved' && (
+                          <Button size="xs" color="dark" onClick={() => updateDropoffRequest(request.id, 'completed')}>
+                            Mark Completed
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {/* Custodians Tab */}

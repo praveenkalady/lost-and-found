@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Button, Label, TextInput, Card, Select } from 'flowbite-react';
+import { Button, Label, TextInput, Card } from 'flowbite-react';
 import api from '../utils/api';
 
 function Register() {
@@ -8,8 +8,7 @@ function Register() {
     email: '',
     password: '',
     full_name: '',
-    phone: '',
-    role: 'owner'
+    phone: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -91,18 +90,6 @@ function Register() {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
-          </div>
-
-          <div>
-            <label htmlFor="role" className="block mb-2 text-sm font-medium text-gray-900">I am a</label>
-            <Select
-              id="role"
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-            >
-              <option value="owner">Owner (looking for lost items)</option>
-              <option value="finder">Finder (reporting found items)</option>
-            </Select>
           </div>
 
           <Button type="submit" color="dark" className="w-full" disabled={loading}>

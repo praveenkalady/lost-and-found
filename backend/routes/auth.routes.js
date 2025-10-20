@@ -39,7 +39,7 @@ router.post('/register', [
       `INSERT INTO profiles (email, password_hash, full_name, phone, role) 
        VALUES ($1, $2, $3, $4, $5) 
        RETURNING id, email, full_name, role, created_at`,
-      [email, password_hash, full_name, phone, role || 'owner']
+      [email, password_hash, full_name, phone, role || 'user']
     );
 
     const user = result.rows[0];

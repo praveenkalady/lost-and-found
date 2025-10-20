@@ -39,21 +39,21 @@ echo "👥 Creating Model Engineering College users..."
 HASH='$2a$10$gjNHgrfIOq11usBGly4kJ.rB4CDoGdoo.mYGOK0.tdCvPUXNl0Fdy'
 
 execute_sql "INSERT INTO profiles (email, password_hash, full_name, phone, role) VALUES 
-('rahul.krishnan@mec.ac.in', '$HASH', 'Rahul Krishnan', '+91 9876543210', 'owner'),
-('priya.nair@mec.ac.in', '$HASH', 'Priya Nair', '+91 9876543211', 'owner'),
-('aditya.menon@mec.ac.in', '$HASH', 'Aditya Menon', '+91 9876543212', 'finder'),
-('anjali.kumar@mec.ac.in', '$HASH', 'Anjali Kumar', '+91 9876543213', 'owner'),
-('vishnu.prasad@mec.ac.in', '$HASH', 'Vishnu Prasad', '+91 9876543214', 'finder'),
-('sneha.pillai@mec.ac.in', '$HASH', 'Sneha Pillai', '+91 9876543215', 'owner'),
-('arjun.sharma@mec.ac.in', '$HASH', 'Arjun Sharma', '+91 9876543216', 'finder'),
-('divya.raj@mec.ac.in', '$HASH', 'Divya Raj', '+91 9876543217', 'owner'),
-('karthik.iyer@mec.ac.in', '$HASH', 'Karthik Iyer', '+91 9876543218', 'owner'),
-('meera.thomas@mec.ac.in', '$HASH', 'Meera Thomas', '+91 9876543219', 'finder'),
-('sanjay.reddy@mec.ac.in', '$HASH', 'Sanjay Reddy', '+91 9876543220', 'owner'),
-('lakshmi.warrier@mec.ac.in', '$HASH', 'Lakshmi Warrier', '+91 9876543221', 'finder'),
-('rohan.das@mec.ac.in', '$HASH', 'Rohan Das', '+91 9876543222', 'owner'),
-('kavya.menon@mec.ac.in', '$HASH', 'Kavya Menon', '+91 9876543223', 'finder'),
-('abhishek.kumar@mec.ac.in', '$HASH', 'Abhishek Kumar', '+91 9876543224', 'owner');"
+('rahul.krishnan@mec.ac.in', '$HASH', 'Rahul Krishnan', '+91 9876543210', 'user'),
+('priya.nair@mec.ac.in', '$HASH', 'Priya Nair', '+91 9876543211', 'user'),
+('aditya.menon@mec.ac.in', '$HASH', 'Aditya Menon', '+91 9876543212', 'user'),
+('anjali.kumar@mec.ac.in', '$HASH', 'Anjali Kumar', '+91 9876543213', 'user'),
+('vishnu.prasad@mec.ac.in', '$HASH', 'Vishnu Prasad', '+91 9876543214', 'user'),
+('sneha.pillai@mec.ac.in', '$HASH', 'Sneha Pillai', '+91 9876543215', 'user'),
+('arjun.sharma@mec.ac.in', '$HASH', 'Arjun Sharma', '+91 9876543216', 'user'),
+('divya.raj@mec.ac.in', '$HASH', 'Divya Raj', '+91 9876543217', 'user'),
+('karthik.iyer@mec.ac.in', '$HASH', 'Karthik Iyer', '+91 9876543218', 'user'),
+('meera.thomas@mec.ac.in', '$HASH', 'Meera Thomas', '+91 9876543219', 'user'),
+('sanjay.reddy@mec.ac.in', '$HASH', 'Sanjay Reddy', '+91 9876543220', 'user'),
+('lakshmi.warrier@mec.ac.in', '$HASH', 'Lakshmi Warrier', '+91 9876543221', 'user'),
+('rohan.das@mec.ac.in', '$HASH', 'Rohan Das', '+91 9876543222', 'user'),
+('kavya.menon@mec.ac.in', '$HASH', 'Kavya Menon', '+91 9876543223', 'user'),
+('abhishek.kumar@mec.ac.in', '$HASH', 'Abhishek Kumar', '+91 9876543224', 'user');"
 
 echo "📱 Creating lost items..."
 

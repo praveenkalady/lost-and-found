@@ -35,6 +35,20 @@ router.post('/', authenticate, [
       [result.rows[0].id, `Item reported as ${status}`, req.user.id, `Created by ${req.user.full_name}`]
     );
 
+    // Broadcast new item notification to all connected users
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('new_item', {
+        id: result.rows[0].id,
+        title: result.rows[0].title,
+        category: result.rows[0].category,
+        status: result.rows[0].status,
+        location: result.rows[0].location,
+        owner_name: req.user.full_name,
+        created_at: result.rows[0].created_at
+      });
+    }
+
     res.status(201).json({ message: 'Item created', item: result.rows[0] });
   } catch (error) {
     console.error('Create item error:', error);
@@ -159,6 +173,12 @@ router.delete('/:id', authenticate, async (req, res) => {
       'INSERT INTO item_history (item_id, action, performed_by, details) VALUES ($1, $2, $3, $4)',
       [req.params.id, 'Item deleted', req.user.id, 'Item marked as inactive']
     );
+
+    // Broadcast item deletion to all connected users
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('item_deleted', { id: parseInt(req.params.id) });
+    }
 
     res.json({ message: 'Item deleted' });
   } catch (error) {

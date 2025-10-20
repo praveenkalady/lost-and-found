@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Card, Badge, Button, Spinner } from 'flowbite-react';
 import api from '../utils/api';
+import DropoffRequestModal from '../components/DropoffRequestModal';
+import PickupRequestModal from '../components/PickupRequestModal';
 
 function ItemDetail() {
   const { id } = useParams();
@@ -9,6 +11,8 @@ function ItemDetail() {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showDropoffModal, setShowDropoffModal] = useState(false);
+  const [showPickupModal, setShowPickupModal] = useState(false);
   const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
 
   useEffect(() => {
@@ -127,36 +131,66 @@ function ItemDetail() {
             <p>Posted on {formatDate(item.created_at)}</p>
           </div>
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex flex-col gap-3 pt-4">
             {isOwner ? (
-              <>
+              <div className="flex gap-3">
+                <Button 
+                  color="success" 
+                  onClick={() => setShowPickupModal(true)}
+                  className="flex-1"
+                >
+                  📦 Request Pickup
+                </Button>
                 <Button color="failure" onClick={handleDelete} className="flex-1">
                   Delete Item
                 </Button>
-              </>
+              </div>
             ) : currentUser ? (
-              <Link 
-                to="/messages" 
-                state={{ 
-                  itemId: item.id, 
-                  ownerId: item.user_id,
-                  ownerName: item.owner_name,
-                  itemTitle: item.title
-                }} 
-                className="flex-1"
-              >
-                <Button color="dark" className="w-full">
-                  Contact Owner
+              <div className="flex gap-3">
+                <Link 
+                  to="/messages" 
+                  state={{ 
+                    itemId: item.id, 
+                    ownerId: item.user_id,
+                    ownerName: item.owner_name,
+                    itemTitle: item.title
+                  }} 
+                  className="flex-1"
+                >
+                  <Button color="dark" className="w-full">
+                    💬 Contact Owner
+                  </Button>
+                </Link>
+                <Button 
+                  color="info" 
+                  onClick={() => setShowDropoffModal(true)}
+                  className="flex-1"
+                >
+                  📤 Drop Off
                 </Button>
-              </Link>
+              </div>
             ) : (
-              <Link to="/login" className="flex-1">
+              <Link to="/login" className="w-full">
                 <Button color="dark" className="w-full">
                   Login to Contact Owner
                 </Button>
               </Link>
             )}
           </div>
+
+          {/* Custodian Modals */}
+          <DropoffRequestModal
+            item={item}
+            isOpen={showDropoffModal}
+            onClose={() => setShowDropoffModal(false)}
+            onSuccess={() => alert('Drop-off request submitted! Check My Requests to track status.')}
+          />
+          <PickupRequestModal
+            item={item}
+            isOpen={showPickupModal}
+            onClose={() => setShowPickupModal(false)}
+            onSuccess={() => {}}
+          />
         </div>
       </Card>
     </div>
